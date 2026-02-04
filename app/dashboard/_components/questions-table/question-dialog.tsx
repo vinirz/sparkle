@@ -299,7 +299,7 @@ export function QuestionDialog({ collectionId, question, children, open: control
                         <FormControl>
                           <Textarea 
                             placeholder="Digite o enunciado da questão..." 
-                            className="min-h-[200px] resize-none" 
+                            className="min-h-[200px] resize-y" 
                             {...field} 
                           />
                         </FormControl>
