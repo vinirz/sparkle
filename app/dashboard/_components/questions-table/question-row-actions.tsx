@@ -42,22 +42,22 @@ export function QuestionRowActions<TData extends Question>({
           onClick={async () => {
             const toastId = toast.loading("Copiando...")
             try {
-              const html = `
-                <div>
-                  <p style="font-size: 14pt; font-family: sans-serif;">${question.statement}</p>
-                  ${question.statement_image_url ? `<br/><img src="${question.statement_image_url}" style="max-width: 500px;" /><br/>` : ''}
-                </div>
-              `
-              
-              const text = question.statement
+                  const html = `
+                    <div>
+                      <div style="font-size: 14pt; font-family: sans-serif;">${question.statement}</div>
+                      ${question.statement_image_url ? `<br/><img src="${question.statement_image_url}" style="max-width: 500px;" /><br/>` : ''}
+                    </div>
+                  `
+                  
+                  const text = question.statement.replace(/<[^>]*>?/gm, '')
 
-              const blobHtml = new Blob([html], { type: "text/html" })
-              const blobText = new Blob([text], { type: "text/plain" })
-              
-              const data = [new ClipboardItem({
-                ["text/html"]: blobHtml,
-                ["text/plain"]: blobText,
-              })]
+                  const blobHtml = new Blob([html], { type: "text/html" })
+                  const blobText = new Blob([text], { type: "text/plain" })
+                  
+                  const data = [new ClipboardItem({
+                    ["text/html"]: blobHtml,
+                    ["text/plain"]: blobText,
+                  })]
 
               await navigator.clipboard.write(data)
               toast.success("Enunciado copiado com sucesso!", { id: toastId })

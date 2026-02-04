@@ -29,7 +29,8 @@ export const columns: ColumnDef<Question>[] = [
     ),
     cell: ({ row }) => {
       const statement = row.getValue("statement") as string
-      return <div className="max-w-[400px] truncate font-medium" title={statement}>{statement}</div>
+      const plainText = statement.replace(/<[^>]*>?/gm, '')
+      return <div className="max-w-[400px] truncate font-medium" title={plainText}>{plainText}</div>
     },
     enableSorting: false, 
     enableHiding: false, 

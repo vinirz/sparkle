@@ -18,8 +18,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { ImageUpload } from "@/components/ui/image-upload"
+// import { ImageUpload } from "@/components/ui/image-upload" // Removido
+// import { Input } from "@/components/ui/input" // Removido se não usado, mas ainda usamos Input
 import { Input } from "@/components/ui/input"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import {
   Select,
   SelectContent,
@@ -72,7 +74,7 @@ interface QuestionDialogProps {
 export function QuestionDialog({ collectionId, question, children, open: controlledOpen, onOpenChange: setControlledOpen }: QuestionDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  // const [imageFile, setImageFile] = useState<File | null>(null) // Removido
   const [currentStep, setCurrentStep] = useState(1)
   const [metadataOptions, setMetadataOptions] = useState({
     subjects: [] as string[],
@@ -113,7 +115,7 @@ export function QuestionDialog({ collectionId, question, children, open: control
         setMetadataOptions(data)
       })
 
-        setImageFile(null)
+        // setImageFile(null)
         setCurrentStep(1)
         if (question) {
             form.reset({
@@ -195,17 +197,18 @@ export function QuestionDialog({ collectionId, question, children, open: control
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       try {
+        // Lógica de upload removida pois agora é inline no RichText
+        /*
         let imageUrl = values.statement_image_url
 
         if (imageFile) {
           const uploadedUrl = await uploadImage(imageFile)
           if (uploadedUrl) {
             imageUrl = uploadedUrl
-          } else {
-            toast.error("Erro ao enviar imagem.")
-            return
           }
         }
+        */
+        const imageUrl = values.statement_image_url // Mantendo valor original se existir
 
         const submissionData = {
             ...values,
@@ -224,7 +227,6 @@ export function QuestionDialog({ collectionId, question, children, open: control
         
         if (setOpen) setOpen(false)
         form.reset()
-        setImageFile(null)
         setCurrentStep(1)
       } catch (error) {
         toast.error(question ? "Erro ao atualizar questão." : "Erro ao criar questão.")
@@ -289,42 +291,20 @@ export function QuestionDialog({ collectionId, question, children, open: control
               <div className="flex-1 overflow-y-auto p-6">
               {/* Step 1: Enunciado */}
               {currentStep === 1 && (
-                <div className="space-y-6">
+                <div className="space-y-6 h-full flex flex-col">
                   <FormField
                     control={form.control}
                     name="statement"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="h-full flex flex-col">
                         <FormLabel>Enunciado*</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Digite o enunciado da questão..." 
-                            className="min-h-[200px] resize-y" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="statement_image_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Imagem do Enunciado</FormLabel>
-                        <FormControl>
-                          <ImageUpload
+                          <RichTextEditor
                             value={field.value}
-                            file={imageFile}
-                            onFileChange={(file) => {
-                              setImageFile(file)
-                              if (!file) {
-                                field.onChange(null)
-                              }
-                            }}
-                            disabled={isPending}
+                            onChange={field.onChange}
+                            placeholder="Digite o enunciado da questão..."
+                            collectionId={collectionId}
+                            className="flex-1 min-h-0"
                           />
                         </FormControl>
                         <FormMessage />
