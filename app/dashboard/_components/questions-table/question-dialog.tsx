@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createClient } from "@/lib/supabase/client"
@@ -55,12 +56,13 @@ const formSchema = z.object({
   year: z.coerce.number().optional(),
   topic: z.string().optional(),
   subtopic: z.string().optional(),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]).default("Medium"),
 })
 
 const steps = [
   { id: 1, name: "Enunciado", fields: ["statement", "statement_image_url"] },
   { id: 2, name: "Resposta", fields: ["type", "correct_answer", "resolution"] },
-  { id: 3, name: "Metadados", fields: ["subject", "institution", "exam", "year", "topic", "subtopic"] },
+  { id: 3, name: "Metadados", fields: ["subject", "institution", "exam", "year", "topic", "subtopic", "difficulty"] },
 ] as const
 
 interface QuestionDialogProps {
@@ -102,9 +104,10 @@ export function QuestionDialog({ collectionId, question, children, open: control
       subject: "",
       institution: "",
       exam: "",
-      year: 0,
+      year: undefined,
       topic: "",
       subtopic: "",
+      difficulty: "Medium",
     },
   })
 
@@ -119,19 +122,18 @@ export function QuestionDialog({ collectionId, question, children, open: control
         setCurrentStep(1)
         if (question) {
             form.reset({
-                originalData: question,
-                statement: question.statement,
+                ...question,
                 statement_image_url: question.statement_image_url || null,
-                type: question.type,
-                correct_answer: question.correct_answer,
-                resolution: question.resolution || "",
-                subject: question.subject,
-                institution: question.institution || "",
-                exam: question.exam || "",
-                year: question.year || 0,
-                topic: question.topic || "",
-                subtopic: question.subtopic || "",
-            } as any)
+                resolution: question.resolution || undefined,
+                institution: question.institution || undefined,
+                exam: question.exam || undefined,
+                year: question.year || undefined,
+                topic: question.topic || undefined,
+                subtopic: question.subtopic || undefined,
+                difficulty: (question.difficulty as "Easy" | "Medium" | "Hard") || "Medium",
+            })
+            // Se tiver imagem, setar no editor, mas o editor carregar via value={field.value} já resolve texto.
+            // A imagem *do enunciado* está no HTML. A prop image_url antiga era capa.
         } else {
             form.reset({
                 statement: "",
@@ -142,9 +144,10 @@ export function QuestionDialog({ collectionId, question, children, open: control
                 subject: "",
                 institution: "",
                 exam: "",
-                year: 0,
+                year: undefined,
                 topic: "",
                 subtopic: "",
+                difficulty: "Medium", // Default
             })
         }
     }
@@ -497,6 +500,41 @@ export function QuestionDialog({ collectionId, question, children, open: control
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="difficulty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dificuldade: {
+                            field.value === "Easy" ? "Fácil" : 
+                            field.value === "Medium" ? "Médio" : "Difícil"
+                          }</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center gap-4 pt-4 px-2">
+                                <span className="text-xs text-muted-foreground font-medium">Fácil</span>
+                                <Slider
+                                    min={1}
+                                    max={3}
+                                    step={1}
+                                    value={[
+                                        field.value === "Easy" ? 1 : 
+                                        field.value === "Hard" ? 3 : 2
+                                    ]}
+                                    onValueChange={(vals) => {
+                                        const val = vals[0]
+                                        const difficulty = val === 1 ? "Easy" : val === 3 ? "Hard" : "Medium"
+                                        field.onChange(difficulty)
+                                    }}
+                                    className="flex-1"
+                                />
+                                <span className="text-xs text-muted-foreground font-medium">Difícil</span>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
               )}
             </div>

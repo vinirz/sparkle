@@ -68,6 +68,17 @@ export function DataTableToolbar<TData>({
             }))}
           />
         )}
+        {table.getColumn("difficulty") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("difficulty")}
+            title="Dificuldade"
+            options={[
+                { label: "Fácil", value: "Easy" },
+                { label: "Médio", value: "Medium" },
+                { label: "Difícil", value: "Hard" },
+            ]}
+          />
+        )}
         {table.getColumn("year") && (
           <DataTableFacetedFilter
             column={table.getColumn("year")}

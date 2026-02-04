@@ -17,6 +17,7 @@ export type Question = {
   year: number | null
   topic: string | null
   subtopic: string | null
+  difficulty: string | null
   collection_id: string
   created_at: string
 }
@@ -107,6 +108,29 @@ export const columns: ColumnDef<Question>[] = [
       cell: ({ row }) => {
           return <div className="truncate" title={row.getValue("exam") as string}>{row.getValue("exam") || "-"}</div>
       },
+  },
+  {
+    accessorKey: "difficulty",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Dificuldade" />
+    ),
+    cell: ({ row }) => {
+      const difficulty = row.getValue("difficulty") as string
+      if (!difficulty) return <div className="text-muted-foreground">-</div>
+      
+      const label = difficulty === "Easy" ? "Fácil" : difficulty === "Medium" ? "Médio" : "Difícil"
+      const color = difficulty === "Easy" ? "bg-green-600 dark:bg-green-400" : difficulty === "Medium" ? "bg-yellow-600 dark:bg-yellow-400" : "bg-red-600 dark:bg-red-400"
+      
+      return (
+        <div className="flex items-center gap-2">
+          <div className='font-medium'>{label}</div>
+          <div className={`w-2 h-2 rounded-full ${color}`}></div>
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+    },
   },
   {
     id: "actions",

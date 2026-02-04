@@ -17,6 +17,7 @@ const questionSchema = z.object({
   year: z.coerce.number().optional(),
   topic: z.string().optional(),
   subtopic: z.string().optional(),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]).optional(),
   collection_id: z.string().uuid(),
 })
 
