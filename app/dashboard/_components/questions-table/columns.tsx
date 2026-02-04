@@ -1,16 +1,13 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { toast } from "sonner"
-import { deleteQuestion } from "@/app/dashboard/questions/actions"
 import { QuestionRowActions } from "./question-row-actions"
 import { DataTableColumnHeader } from "./data-table-column-header"
-
-
 
 export type Question = {
   id: string
   statement: string
+  statement_image_url: string | null
   type: "objective" | "discursive"
   correct_answer: string
   resolution: string | null
@@ -112,6 +109,6 @@ export const columns: ColumnDef<Question>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <QuestionRowActions row={row} />,
+    cell: ({ row, table }) => <QuestionRowActions row={row} table={table} />,
   },
 ]

@@ -27,6 +27,9 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { DataTableToolbar } from "./data-table-toolbar"
+import { QuestionDialog } from "./question-dialog"
+import { Question } from "./columns"
+import { useState } from "react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -44,6 +47,7 @@ export function DataTable<TData, TValue>({
     []
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
 
   const table = useReactTable({
     data,
@@ -65,6 +69,9 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    meta: {
+      onEdit: (question: Question) => setEditingQuestion(question)
+    }
   })
 
   return (
@@ -96,6 +103,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onDoubleClick={() => setEditingQuestion(row.original as Question)}
+                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -141,6 +150,15 @@ export function DataTable<TData, TValue>({
           </Button>
         </div>
       </div>
+
+      <QuestionDialog 
+        open={!!editingQuestion} 
+        onOpenChange={(open) => !open && setEditingQuestion(null)}
+        question={editingQuestion || undefined}
+        collectionId={editingQuestion?.collection_id || ""}
+      >
+        {null}
+      </QuestionDialog>
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { z } from "zod"
 
 const questionSchema = z.object({
   statement: z.string().min(1, "O enunciado é obrigatório"),
+  statement_image_url: z.string().nullable().optional(),
   type: z.enum(["objective", "discursive"]),
   correct_answer: z.string().min(1, "A resposta correta é obrigatória"),
   resolution: z.string().optional(),
@@ -107,4 +108,50 @@ export async function updateQuestion(id: string, collectionId: string, data: Que
 
   revalidatePath(`/dashboard/collections/${collectionId}`)
   revalidatePath(`/dashboard/questions`)
+}
+
+export async function getCollectionMetadata(collectionId: string) {
+  const cookieStore = cookies()
+  const supabase = createClient(cookieStore)
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      subjects: [],
+      institutions: [],
+      exams: [],
+      topics: [],
+      subtopics: [],
+      years: [],
+    }
+  }
+
+  // Buscar apenas as colunas de metadados da coleção
+  const { data } = await supabase
+    .from('questions')
+    .select('subject, institution, exam, topic, subtopic, year')
+    .eq('collection_id', collectionId)
+    .eq('user_id', user.id)
+
+  if (!data) return {
+    subjects: [],
+    institutions: [],
+    exams: [],
+    topics: [],
+    subtopics: [],
+    years: [],
+  }
+
+  // Extrair valores únicos
+  const uniqueMetadata = {
+    subjects: [...new Set((data as any[]).map(q => q.subject).filter(Boolean))],
+    institutions: [...new Set((data as any[]).map(q => q.institution).filter(Boolean))],
+    exams: [...new Set((data as any[]).map(q => q.exam).filter(Boolean))],
+    topics: [...new Set((data as any[]).map(q => q.topic).filter(Boolean))],
+    subtopics: [...new Set((data as any[]).map(q => q.subtopic).filter(Boolean))],
+    years: [...new Set((data as any[]).map(q => q.year).filter((val: any) => val !== null && val !== undefined))],
+  }
+
+  return uniqueMetadata
 }
